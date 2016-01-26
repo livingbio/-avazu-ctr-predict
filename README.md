@@ -1,1 +1,1 @@
-# -avazu-ctr-predict
+# avazu-ctr-predict
