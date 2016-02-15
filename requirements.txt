@@ -1,0 +1,7 @@
+numpy
+scipy
+IPython
+psutil
+#sudo apt-get install pkg-config
+#matplotlib
+scikit-learn
