@@ -1,7 +1,16 @@
+#apt-get build-dep python-matplotlib
+#apt-get install python-matplotlib
 numpy
 scipy
 IPython
 psutil
-#sudo apt-get install pkg-config
-#matplotlib
+#For matplotlib
+setuptools 
+Python-dateutil 
+pytz 
+pyparsing
+libpng
+freetype
+cycler
+matplotlib
 scikit-learn
