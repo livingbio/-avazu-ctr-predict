@@ -4,13 +4,5 @@ numpy
 scipy
 IPython
 psutil
-#For matplotlib
-setuptools 
-Python-dateutil 
-pytz 
-pyparsing
-libpng
-freetype
-cycler
 matplotlib
 scikit-learn
