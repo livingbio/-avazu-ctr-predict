@@ -1,6 +1,7 @@
 from preprocess import PreProcess
 import numpy as np
 import logging
+import csv
 from sklearn.svm import SVC
 
 if __name__ == "__main__":
@@ -9,7 +10,7 @@ if __name__ == "__main__":
     p = PreProcess()
 
     train_filepath = 'data/train_1000.csv.out'
-    test_filepath = 'data/test_1000.csv.out'
+    test_filepath = 'data/test.csv.out'
 
     #Load train data
     logging.info("Loading train set...")
@@ -32,6 +33,19 @@ if __name__ == "__main__":
     svc_probs = svc.predict_proba(X_test)
     #TODO make result file
     #[prob of 0, prob of 1]
-    logging.info(svc_probs[:10])
+    logging.info("prob of test: %s" % svc_probs[:10])
     
+    out_filepath = "%s-svc-c%f-g%f.csv" %(test_filepath, C, gamma)
+    logging.info("Writing out file %s" % out_filepath)
+    if len(ids_test) != len(svc_probs):
+        logging.error("Test case count don:t match")
+    else :
+        with open(out_filepath, 'w') as ofile:
+            field = ['id', 'prob']
+            writer = csv.DictWriter(ofile, field)
+            for i in range(len(ids_test)):
+                row = {'id' : ids_test[i], 'prob' : svc_probs[i][1]}
+                logging.info("row %d : %s" %(i, row))
+                writer.writerow(row)
+
     logging.info("train_test.py End")
