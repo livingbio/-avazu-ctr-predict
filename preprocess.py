@@ -55,13 +55,30 @@ class PreProcess:
             X = X[:,2:]
             return X, y
 
-    #TODO Add load_test_data
+    def load_test_data(self, filepath):
+        with open(filepath) as ifile:
+            #MAKE numpy array
+            reader = csv.reader(ifile)
+            x = list(reader)
+            logging.debug('small_x %s' %x)
+            X = np.array(x)
+            #X = np.array(x)
+            #Get id
+            ids = X[:,0]
+            #Remove id
+            X = X[:,1:].astype('int64')
+            return X, ids
 
 if __name__ == "__main__":
     p = PreProcess()
-    filepath = 'data/train_10.csv'
-    out_filepath = p.convert(filepath)
-    X, y = p.load_train_data(out_filepath)
-    logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
-    logging.info("example X = %s\ny =%r" %(X[0], y[0]))
 
+    #filepath = 'data/train_10.csv'
+    #out_filepath = p.convert(filepath)
+    #X, y = p.load_train_data(out_filepath)
+    #logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
+    #logging.info("example X = %s\ny =%r" %(X[0], y[0]))
+
+    test_filepath = 'data/test_10.csv.out'
+    X, ids = p.load_test_data(test_filepath)
+    logging.info("Shape X = %r, ids =%r" %(X.shape, ids.shape ))
+    logging.info("example X = %s\nids =%r" %(X[0], ids[0]))
