@@ -12,12 +12,12 @@ class PreProcess:
             reader = csv.DictReader(ifile)
             field_name = reader.fieldnames
             logging.info('read fieldnames %s' % field_name)
-            #TODO dayOfWeek
+
             new_field = ['dayOfWeek', 'day', 'date']
-            #new_field = ['day', 'date']
             field_name += new_field
             writer = csv.DictWriter(ofile, field_name)
-            writer.writeheader()
+            #Don't write header
+            #writer.writeheader()
             logging.info('write fieldnames %s' % field_name)
             #TODO MAKE numpy array
             #reader_2 = csv.reader(ifile)
@@ -39,13 +39,30 @@ class PreProcess:
                 #Make hex2int
                 for key in hex_list:
                     row[key] = int(row[key], 16)
+                #Remove id
+                row['id'] = 0
                 writer.writerow(row)
+            out_filepath = filepath + '.out'
+            logging.info("Outfile path %s" % out_filepath)
+            return out_filepath
 
-            logging.info(filepath)
-            #return X, y
+    def load_train_data(self, filepath):
+        with open(filepath) as ifile:
+            #MAKE numpy array
+            reader = csv.reader(ifile)
+            x = list(reader)
+            logging.debug('small_x %s' %x)
+            X = np.array(x).astype('int64')
+            #X = np.array(x)
+            #Get click
+            y = X[:,1]
+            #Remove id and click
+            X = X[:,2:]
+            return X, y
 
 if __name__ == "__main__":
     p = PreProcess()
     filepath = 'data/train_10.csv'
-    logging.info(p.convert(filepath))
+    out_filepath = p.convert(filepath)
+    logging.info(p.load_train_data(out_filepath))
 
