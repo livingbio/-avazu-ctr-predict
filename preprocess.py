@@ -19,14 +19,9 @@ class PreProcess:
             #Don't write header
             #writer.writeheader()
             logging.info('write fieldnames %s' % field_name)
-            #TODO MAKE numpy array
-            #reader_2 = csv.reader(ifile)
-            #x = list(reader_2)
-            #X = np.array(x)
-            #.astype('int64')
-            #y = X[:,1]
 
             for row in reader:
+                #TODO add row_count, and print
                 hour = row['hour']
                 #logging.debug('hour %s' % hour)
                 if len(hour) !=8:
@@ -39,7 +34,7 @@ class PreProcess:
                 #Make hex2int
                 for key in hex_list:
                     row[key] = int(row[key], 16)
-                #Remove id
+                #Remove id for trainining
                 row['id'] = 0
                 writer.writerow(row)
             out_filepath = filepath + '.out'
@@ -60,9 +55,13 @@ class PreProcess:
             X = X[:,2:]
             return X, y
 
+    #TODO Add load_test_data
+
 if __name__ == "__main__":
     p = PreProcess()
     filepath = 'data/train_10.csv'
     out_filepath = p.convert(filepath)
-    logging.info(p.load_train_data(out_filepath))
+    X, y = p.load_train_data(out_filepath)
+    logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
+    logging.info("example X = %s\ny =%r" %(X[0], y[0]))
 
