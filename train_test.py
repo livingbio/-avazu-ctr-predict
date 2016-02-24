@@ -31,13 +31,16 @@ if __name__ == "__main__":
     logging.info("classes: %r" % list(np.unique(y_train)))
     
     #Training
+    #Default
+    C= 1.0
+    gamma = 'auto'
     #For 1000 train
     #C= 1.0
     #gamma = 0.1
     
     #For 1m train
-    C = 0.10000000000000001
-    gamma = 0.0001 
+    #C = 0.10000000000000001
+    #gamma = 0.0001 
     logging.info("Train SVC with C: %f, gamma: %f" %(C, gamma))
     svc = SVC(C=C, gamma = gamma, probability=True, verbose = True).fit(X_train, y_train)
     
