@@ -44,7 +44,7 @@ if __name__ == "__main__":
     logging.info("Train SVC with C: %f, gamma: %f" %(C, gamma))
     svc = SVC(C=C, gamma = gamma, probability=True, verbose = True).fit(X_train, y_train)
     
-    #TODO Load test data for 5 times
+    #Load test data for 5 times
     field = ['id', 'click']
     for part in range(1, 6):
         test_filepath = test_filepattern % part

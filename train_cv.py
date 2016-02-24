@@ -1,6 +1,7 @@
 from preprocess import PreProcess
 import numpy as np
 import logging
+import csv
 from sklearn.svm import SVC
 from sklearn.grid_search import GridSearchCV
 
@@ -22,9 +23,10 @@ if __name__ == "__main__":
     logging.info("example X = %s\ny =%r" %(X[0], y[0]))
     logging.info("classes: %r" % list(np.unique(y)))
 
+    #TODO Add ShuffleSplit
     #Sampling
     POWER = 4
-    CONST = 1
+    CONST = 5
     CV = 5
     n_subsamples = CONST*10**POWER
     n_size = y.shape[0]
@@ -45,4 +47,33 @@ if __name__ == "__main__":
     gs_svc.fit(X_small_train, y_small_train)
 
     logging.info("Best params: %s\nScore: %s" % (gs_svc.best_params_, gs_svc.best_score_))
+    
+    #Load test data for 5 times
+    test_filepattern = 'data/test_%d_M.out'
+    field = ['id', 'click']
+    for part in range(1, 6):
+        test_filepath = test_filepattern % part
+        logging.info("Loading test set [%s]..." % test_filepath)
+        X_test, ids_test= p.load_test_data(test_filepath)
+        logging.info("Shape X = %r, ids =%r" %(X_test.shape, ids_test.shape ))
+        logging.info("example X = %s\nids =%r" %(X_test[0], ids_test[0]))
+        svc_probs = gs_svc.predict_proba(X_test)
+        #[prob of 0, prob of 1]
+        logging.info("prob of test: %s" % svc_probs[:10])
+        
+        out_filepath = "%s-svc-t50K-s%d-c%f-g%f.csv" %(test_filepath, n_subsamples, gs_svc.best_params_['C'], gs_svc.best_params_['gamma'])
+        logging.info("Writing out file %s" % out_filepath)
+        if len(ids_test) != len(svc_probs):
+            logging.error("Test case count don:t match")
+        else :
+            with open(out_filepath, 'a') as ofile:
+                writer = csv.DictWriter(ofile, field)
+                if part == 1:
+                    writer.writeheader()
+                for i in range(len(ids_test)):
+                    row = {'id' : ids_test[i], 'click' : svc_probs[i][1]}
+                    #logging.info("row %d : %s" %(i, row))
+                    writer.writerow(row)
+
+    
     logging.info("avazu_train.py End")
