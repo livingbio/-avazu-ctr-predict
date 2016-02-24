@@ -1,8 +1,8 @@
-#apt-get build-dep python-matplotlib
-#apt-get install python-matplotlib
+#sudo apt-get build-dep python-matplotlib
+#Cannot build scipy and numpy :
+#sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
 numpy
 scipy
-IPython
 psutil
 matplotlib
 scikit-learn
