@@ -25,16 +25,21 @@ if __name__ == "__main__":
 
     #TODO Add ShuffleSplit
     #Sampling
-    POWER = 4
+    #At least 3
+    POWER = 3
     CONST = 5
+    #At least 2
     CV = 5
     n_subsamples = CONST*10**POWER
     n_size = y.shape[0]
     if n_subsamples < n_size:
-        X_small_train, y_small_train = X[:n_subsamples], y[:n_subsamples]
+        logging.info("second index : %d to %d" % (n_size - n_subsamples/2, n_size))
+        X_small_train = X[range(n_subsamples/2)+range(n_size - n_subsamples/2, n_size)]
+        y_small_train = y[range(n_subsamples/2)+range(n_size - n_subsamples/2, n_size)]
     else:
         X_small_train, y_small_train = X, y
-    logging.info("Samples : %r, CV :%d" % (y_small_train.shape, CV))
+    n_subsamples = y_small_train.shape[0]
+    logging.info("Samples : %d, CV :%d" % (n_subsamples, CV))
     
     #CV
     svc_params = {
@@ -61,7 +66,7 @@ if __name__ == "__main__":
         #[prob of 0, prob of 1]
         logging.info("prob of test: %s" % svc_probs[:10])
         
-        out_filepath = "%s-svc-t50K-s%d-c%f-g%f.csv" %(test_filepath, n_subsamples, gs_svc.best_params_['C'], gs_svc.best_params_['gamma'])
+        out_filepath = "%s-svc-t1M-s%d-c%f-g%f.csv" %(test_filepath, n_subsamples, gs_svc.best_params_['C'], gs_svc.best_params_['gamma'])
         logging.info("Writing out file %s" % out_filepath)
         if len(ids_test) != len(svc_probs):
             logging.error("Test case count don:t match")
