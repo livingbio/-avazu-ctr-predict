@@ -27,7 +27,7 @@ if __name__ == "__main__":
     #Sampling
     #At least 3
     POWER = 3
-    CONST = 5
+    CONST = 1
     #At least 2
     CV = 5
     n_subsamples = CONST*10**POWER
@@ -46,8 +46,12 @@ if __name__ == "__main__":
             'C': np.logspace(-1, 2, 4),
             'gamma': np.logspace(-4, 0, 5),
             }
-
-    gs_svc = GridSearchCV(SVC(probability=True, verbose = True), svc_params, refit=True ,scoring='log_loss', cv=CV, n_jobs=-1, verbose = 1)
+    #Add class_weight
+    class_weight = {
+            1:4.8,
+            0:1.0
+            }
+    gs_svc = GridSearchCV(SVC(probability=True, verbose = True, class_weight ='balanced'), svc_params, refit=True ,scoring='log_loss', cv=CV, n_jobs=-1, verbose = 1)
 
     gs_svc.fit(X_small_train, y_small_train)
 
