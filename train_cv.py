@@ -12,7 +12,8 @@ if __name__ == "__main__":
     PREPROCESS = False
 
     filepath = 'data/train_1M.csv'
-    out_filepath = 'data/train_1M.csv.out'
+    #out_filepath = 'data/train_1M.csv.out'
+    out_filepath = 'data/train_s404_100K.out.1vs1'
     #out_filepath = 'data/train_1000.csv.out'
     if PREPROCESS:
         out_filepath = p.convert(filepath)
@@ -70,7 +71,7 @@ if __name__ == "__main__":
         #[prob of 0, prob of 1]
         logging.info("prob of test: %s" % svc_probs[:10])
         
-        out_filepath = "%s-svc-t1M-s%d-c%f-g%f.csv" %(test_filepath, n_subsamples, gs_svc.best_params_['C'], gs_svc.best_params_['gamma'])
+        out_filepath = "%s-svc-1vs1-s%d-c%f-g%f.csv" %(test_filepath, n_subsamples, gs_svc.best_params_['C'], gs_svc.best_params_['gamma'])
         logging.info("Writing out file %s" % out_filepath)
         if len(ids_test) != len(svc_probs):
             logging.error("Test case count don:t match")

@@ -2,7 +2,7 @@ import numpy as np
 import logging
 import csv
 
-logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 class PreProcess:
     def convert(self, filepath):
