@@ -2,7 +2,7 @@ import numpy as np
 import logging
 import csv
 
-logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
+logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
 
 class PreProcess:
     def convert(self, filepath):
@@ -69,6 +69,27 @@ class PreProcess:
             X = X[:,1:].astype('int64')
             return X, ids
 
+    def divide_train_data(self, filepath):
+        #Divide training data label 1 vs 0
+        with open(filepath) as ifile, open(filepath+'.1', 'wb') as ofile_1, open(filepath+'.0', 'wb') as ofile_0:
+            #MAKE numpy array
+            reader = csv.reader(ifile)
+            writer_0 = csv.writer(ofile_0)
+            writer_1 = csv.writer(ofile_1)
+            cnt_0 = cnt_1 = 0
+            for row in reader:
+                #row is list, row[1] is str
+                #[1] is click
+                if row[1] == '1':
+                    writer_1.writerow(row)
+                    cnt_1 +=1
+                elif row[1] == '0':
+                    writer_0.writerow(row)
+                    cnt_0 +=1
+
+            logging.info('count of \'0\' : %d in file %s' %(cnt_0, filepath))
+            logging.info('count of \'1\' : %d' %cnt_1)
+
 if __name__ == "__main__":
     p = PreProcess()
 
@@ -78,7 +99,12 @@ if __name__ == "__main__":
     #logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
     #logging.info("example X = %s\ny =%r" %(X[0], y[0]))
 
+    """
     test_filepath = 'data/test_10.csv.out'
     X, ids = p.load_test_data(test_filepath)
     logging.info("Shape X = %r, ids =%r" %(X.shape, ids.shape ))
     logging.info("example X = %s\nids =%r" %(X[0], ids[0]))
+    """
+    
+    train_filepath = 'data/train_s404_100K.out'
+    p.divide_train_data(train_filepath)
