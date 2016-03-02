@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     filepath = 'data/train_1M.csv'
     #out_filepath = 'data/train_1M.csv.out'
-    out_filepath = 'data/train_s404_100K.out.1vs1'
+    out_filepath = 'data/train_s404_1K.out'
     #out_filepath = 'data/train_1000.csv.out'
     if PREPROCESS:
         out_filepath = p.convert(filepath)
@@ -42,6 +42,8 @@ if __name__ == "__main__":
     n_subsamples = y_small_train.shape[0]
     logging.info("Samples : %d, CV :%d" % (n_subsamples, CV))
     
+    #Kernal
+    KERNEL = 'linear'
     #CV
     svc_params = {
             'C': np.logspace(-1, 2, 4),
@@ -52,12 +54,15 @@ if __name__ == "__main__":
             1:4.8,
             0:1.0
             }
-    gs_svc = GridSearchCV(SVC(probability=True, verbose = True, class_weight ='balanced'), svc_params, refit=True ,scoring='log_loss', cv=CV, n_jobs=-1, verbose = 1)
+    gs_svc = GridSearchCV(SVC(probability=True, verbose = False, kernel = KERNEL, cache_size = 200, class_weight ='balanced'), svc_params, refit=True ,scoring='log_loss', cv=CV, n_jobs=-1, verbose = 1)
 
     gs_svc.fit(X_small_train, y_small_train)
 
     logging.info("Best params: %s\nScore: %s" % (gs_svc.best_params_, gs_svc.best_score_))
     
+    #XXX skip test
+    exit()
+
     #Load test data for 5 times
     test_filepattern = 'data/test_%d_M.out'
     field = ['id', 'click']
