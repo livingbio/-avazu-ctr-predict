@@ -40,11 +40,11 @@ if __name__ == "__main__":
     #CV
     learner_params = {
             #'n_neighbors' : [15],
-            'n_neighbors' : [5, 15, 25],
-            #'weights' : ['uniform'],
-            'weights' : ['uniform', 'distance'],
-            'algorithm' : ['auto']
-            #'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
+            'n_neighbors' : [250, 500, 750, 1000],
+            'weights' : ['uniform'],
+            #'weights' : ['uniform', 'distance'],
+            #'algorithm' : ['auto']
+            'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
             }
 
     #Add class_weight
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         #[prob of 0, prob of 1]
         logging.info("prob of test: %s" % learner_probs[:10])
         
-        out_filepath = "%s-knn-s%d-n%d-w%s-a%s.csv" %(test_filepath, n_subsamples, gs_learner.best_params_['n_neighbors'], gs_learner.best_params_['weights'], gs_learner.best_params_['algorithm'])
+        out_filepath = "%s-knn-s%d-n%d-w-%s-a-%s.csv" %(test_filepath, n_subsamples, gs_learner.best_params_['n_neighbors'], gs_learner.best_params_['weights'], gs_learner.best_params_['algorithm'])
         logging.info("Writing out file %s" % out_filepath)
         if len(ids_test) != len(learner_probs):
             logging.error("Test case count don:t match")
