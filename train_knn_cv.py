@@ -40,11 +40,11 @@ if __name__ == "__main__":
     #CV
     learner_params = {
             #'n_neighbors' : [15],
-            'n_neighbors' : [250, 500, 750, 1000],
+            'n_neighbors' : [100, 150, 200, 250, 300],
             'weights' : ['uniform'],
             #'weights' : ['uniform', 'distance'],
-            #'algorithm' : ['auto']
-            'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
+            'algorithm' : ['auto']
+            #'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
             }
 
     #Add class_weight
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             1:4.8,
             0:1.0
             }
-    learner = KNeighborsClassifier(n_jobs = -1)
+    learner = KNeighborsClassifier(n_jobs = 1)
     gs_learner = GridSearchCV(learner, learner_params, refit=True ,scoring='log_loss', n_jobs=-1, verbose = 1)
     gs_learner.fit(X_small_train, y_small_train)
 
