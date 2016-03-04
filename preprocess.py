@@ -41,18 +41,21 @@ class PreProcess:
             logging.info("Outfile path %s" % out_filepath)
             return out_filepath
 
-    def load_train_data(self, filepath):
+    def load_train_data(self, filepath, regression = False):
         with open(filepath) as ifile:
             #MAKE numpy array
             reader = csv.reader(ifile)
             x = list(reader)
             logging.debug('small_x %s' %x)
-            X = np.array(x).astype('int64')
+            X = np.array(x)
             #X = np.array(x)
             #Get click
-            y = X[:,1]
+            if regression:
+                y = X[:,1].astype('float')
+            else:
+                y = X[:,1].astype('int8')
             #Remove id and click
-            X = X[:,2:]
+            X = X[:,2:].astype('int64')
             return X, y
 
     def load_test_data(self, filepath):
