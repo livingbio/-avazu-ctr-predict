@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.feature_extraction import FeatureHasher
 import logging
 import csv
 
@@ -54,25 +56,33 @@ class PreProcess:
                 y = X[:,1].astype('float')
             else:
                 y = X[:,1].astype('int8')
-            #Remove id and click
-            X = X[:,2:].astype('int64')
-            #FIXME memory error, map to smaller index
-
             if category:
-                #C20 had -1, make it 1
-                for i in X:
-                    if i[20] == -1:
-                        i[20] = 0
-                logging.info("after X = %s" %(X))
+                #Remove id and click
+                X = X[:,2:].astype('str')
                 
-                #the index of category features
+                #FIXME memory error, map index to smaller 
+                #my_data = [['a','b'],['b','a'],['c','b'],['d','a'],['a','c']]
+                #df = pd.DataFrame(my_data, columns = ['var1','var2'])
+                #dummy1 = pd.get_dummies(df['var1'], prefix='var1')
+                #dummy1.merge(dummy2, right_index=True, left_index=True)
+                
+                #C20 had -1, make it 0
+                for i in X:
+                    if i[20] == '-1':
+                        i[20] = '0'
+                logging.info("after X = %s" %(X))
                 #25 features, only C15, C16 is value
                 cat_index = range(0, 15) + range(17, 25)
-                enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int64, handle_unknown='ignore')
+                #enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int8, handle_unknown='ignore',n_values='auto')
+                enc = FeatureHasher(n_features=3000, dtype=np.int8, non_negative=True, input_type='string')
+                #enc = FeatureHasher(dtype=np.int8, non_negative=True, input_type='string')
                 enc.fit(X)
                 X = enc.transform(X)
+                logging.info("enc.get_params = %s" %enc.get_params())
                 return X, y, enc
             else:
+                #Remove id and click
+                X = X[:,2:].astype('int64')
                 return X, y
 
     def load_test_data(self, filepath, enc = None):

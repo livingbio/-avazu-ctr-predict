@@ -6,3 +6,4 @@ scipy
 psutil
 matplotlib
 scikit-learn
+pandas
