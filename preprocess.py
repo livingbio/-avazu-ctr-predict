@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.feature_extraction import FeatureHasher
 import logging
 import csv
 
@@ -44,6 +43,31 @@ class PreProcess:
             logging.info("Outfile path %s" % out_filepath)
             return out_filepath
 
+    def transform_and_map(self, X, ignore_index = None):
+        features = np.shape(X)[1]
+        #Init
+        map_dict = [None] * features
+        trans_X = X.copy()
+        for i in range(features):
+            if i not in ignore_index:
+                map_dict[i], trans_X[:,i] = np.unique(X[:,i], return_inverse=True)
+                logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
+
+        return trans_X, map_dict
+
+    def transform_with_map(self, X, map_dict, ignore_index = None):
+        features = np.shape(X)[1]
+        #Init
+        trans_X = X.copy()
+        for i in range(features):
+            if i not in ignore_index:
+                #TODO 
+                #replace value with index in map
+                #trans_X[:,i] = X[:,i]
+                continue
+
+        return trans_X, map_dict
+
     def load_train_data(self, filepath, regression = False, category= False):
         with open(filepath) as ifile:
             #MAKE numpy array
@@ -58,53 +82,42 @@ class PreProcess:
                 y = X[:,1].astype('int8')
             if category:
                 #Remove id and click
-                X = X[:,2:].astype('str')
-                
-                #FIXME memory error, map index to smaller 
-                #my_data = [['a','b'],['b','a'],['c','b'],['d','a'],['a','c']]
-                #df = pd.DataFrame(my_data, columns = ['var1','var2'])
-                #dummy1 = pd.get_dummies(df['var1'], prefix='var1')
-                #dummy1.merge(dummy2, right_index=True, left_index=True)
-                
-                #C20 had -1, make it 0
-                for i in X:
-                    if i[20] == '-1':
-                        i[20] = '0'
-                logging.info("after X = %s" %(X))
+                X = X[:,2:].astype('int64')
+                logging.info("X = \n%s" %X[:3])
                 #25 features, only C15, C16 is value
+                ignore_index = [15, 16]
                 cat_index = range(0, 15) + range(17, 25)
-                #enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int8, handle_unknown='ignore',n_values='auto')
-                enc = FeatureHasher(n_features=3000, dtype=np.int8, non_negative=True, input_type='string')
-                #enc = FeatureHasher(dtype=np.int8, non_negative=True, input_type='string')
+                X, map_dict = self.transform_and_map(X, ignore_index = ignore_index)
+                logging.info("After small index transform X = \n%s" %X[:3])
+                enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int8, handle_unknown='ignore',n_values='auto')
                 enc.fit(X)
                 X = enc.transform(X)
                 logging.info("enc.get_params = %s" %enc.get_params())
-                return X, y, enc
+                logging.info("After enc transform X[0] =\n%s" %X.getrow(0))
+                return X, y, enc, map_dict
             else:
                 #Remove id and click
                 X = X[:,2:].astype('int64')
                 return X, y
 
-    def load_test_data(self, filepath, enc = None):
+    def load_test_data(self, filepath, enc = None, map_dict = None):
         with open(filepath) as ifile:
             #MAKE numpy array
             reader = csv.reader(ifile)
             x = list(reader)
             logging.debug('small_x %s' %x)
             X = np.array(x)
-            #X = np.array(x)
             #Get id
             ids = X[:,0]
             X = X[:,1:].astype('int64')
-            if enc !=None:
-                #C20 had -1, make it 1
-                for i in X:
-                    if i[20] == -1:
-                        i[20] = 0
-                logging.info("after X = %s" %(X))
-                
-                X=enc.transform(X)
-
+            if enc !=None and map_dict !=None:
+                logging.info("X = \n%s" %X[:3])
+                #25 features, only C15, C16 is value
+                ignore_index = [15, 16]
+                X = self.transform_with_map(X, map_dict, ignore_index = ignore_index)
+                logging.info("After small index transform X = \n%s" %X[:3])
+                X = enc.transform(X)
+                logging.info("After enc transform X[0] =\n%s" %X.getrow(0))
             return X, ids
 
     def divide_train_data(self, filepath):
@@ -135,14 +148,14 @@ if __name__ == "__main__":
     #out_filepath = p.convert(filepath)
 
     out_filepath = 'data/train_10.csv.out'
-    X, y, enc = p.load_train_data(out_filepath, regression=True, category = True)
-    logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
-    logging.info("example X = %s\ny =%s" %(X[0], y[0]))
-    '''
+    X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
+    logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
+    #logging.info("example X = \n%s\ny =%s" %(X.getrow(0), y[0]))
+    
     test_filepath = 'data/test_10.csv.out'
-    X, ids = p.load_test_data(test_filepath, enc = enc)
-    logging.info("Shape X = %r, ids =%r" %(X.shape, ids.shape ))
-    logging.info("example X = %s\nids =%r" %(X[0], ids[0]))
-    '''
+    X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
+    logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
+    #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
+    
     #train_filepath = 'data/train_s404_100K.out'
     #p.divide_train_data(train_filepath)
