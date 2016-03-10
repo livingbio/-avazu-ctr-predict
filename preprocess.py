@@ -1,10 +1,7 @@
 import numpy as np
-#from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 import logging
 import csv
-
-#logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 class PreProcess:
     def convert(self, filepath):
@@ -101,14 +98,21 @@ class PreProcess:
                     logging.info("Shape X[:,%d] = %r" %( i, X[:,i].shape))
                     logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
                     enc.fit(X[:,i])
-                    #logging.info("enc.get_params = %s" %enc.get_params())
-                    new_X = np.concatenate((new_X, enc.transform(X[:,i])), axis=1)
-                    logging.debug("After transform X[:,%d] = %s" % (i, enc.transform(X[:10,i])))
+                    new_X_i = enc.transform(X[:,i])
                     map_dict[i] = enc.classes_
-                    #FIXME len(dict) =2 will have problem
-                    logging.debug("After transform shape X[:,%d] = %r" % (i, enc.transform(X[:10,i]).shape))
+                    #FIX len(dict) =1 will have 0 value of hit
+                    if len(map_dict[i]) == 1:
+                        new_X = np.concatenate((new_X, 1-new_X_i), axis=1)
+                    #FIX len(dict) =2 will 1-d instead of 2-d
+                    elif len(map_dict[i]) == 2:
+                        new_X = np.concatenate((new_X, 1-new_X_i, new_X_i), axis=1)
+                    else:
+                        new_X = np.concatenate((new_X, new_X_i), axis=1)
+
+                    logging.debug("After transform X[:,%d] = %s" % (i, new_X_i[:10]))
+                    logging.debug("After shape new_X_i[:,%d] = %r, new_X = %r" % (i, new_X_i.shape, new_X.shape))
                     logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
-                
+
                 logging.info("Shape new X = %r, %r" %(new_X.shape))
                 logging.info("After enc transform X[0] =\n%s" %new_X[0])
                 return new_X, y, enc, map_dict
@@ -144,17 +148,30 @@ class PreProcess:
                 for i in cat_index:
                     logging.info("Shape X[:,%d] = %r" %( i, X[:,i].shape))
                     logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
-                    enc.fit(map_dict[i])
-                    new_X = np.concatenate((new_X, enc.transform(X[:,i])), axis=1)
-                    logging.debug("After transform X[:,%d] = %s" % (i, enc.transform(X[:10,i])))
-                    logging.debug("After transform shape X[:,%d] = %r" % (i, enc.transform(X[:10,i]).shape))
-                    #FIXME len(dict) =2 will have problem
+                    
+                    #FIX len(dict) =2 will have problem
+                    if len(map_dict[i]) == 2:
+                        enc.fit(map_dict[i])
+                        new_X_i = enc.transform(X[:,i])
+                        if new_X_i.shape[1] == 2:
+                            new_X = np.concatenate((new_X, new_X_i), axis=1)
+                        else:
+                            enc.fit([map_dict[i][0], map_dict[i][1], 9879])
+                            new_X_i = enc.transform(X[:,i])[:,:2]
+                            new_X = np.concatenate((new_X, new_X_i), axis=1)
+                    else:
+                        enc.fit(map_dict[i])
+                        new_X_i = enc.transform(X[:,i])
+                        new_X = np.concatenate((new_X, new_X_i), axis=1)
+                    
+                    logging.debug("After transform X[:,%d] = %s" % (i, new_X_i[:10]))
+                    logging.debug("After shape new_X_i[:,%d] = %r, new_X = %r" % (i, new_X_i.shape, new_X.shape))
                     logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
-                
+
                 logging.info("Shape new X = %r, %r" %(new_X.shape))
                 logging.info("After enc transform X[0] =\n%s" %new_X[0])
                 return new_X, ids
-            
+
             return X, ids
 
     def divide_train_data(self, filepath):
@@ -185,15 +202,16 @@ if __name__ == "__main__":
     #filepath = 'data/train_10.csv'
     #out_filepath = p.convert(filepath)
 
-    #out_filepath = 'data/train_10.csv.out'
-    out_filepath = 'data/train_1000.csv.out'
+    out_filepath = 'data/train_10.csv.out'
+    #out_filepath = 'data/train_1000.csv.out'
     X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
     logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
-    
-    test_filepath = 'data/test_1000.csv.out'
+
+    #test_filepath = 'data/test_1000.csv.out'
+    test_filepath = 'data/test_10.csv.out'
     X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
     logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
     #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
-    
+
     #train_filepath = 'data/train_s404_100K.out'
     #p.divide_train_data(train_filepath)
