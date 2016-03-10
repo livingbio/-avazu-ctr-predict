@@ -1,10 +1,10 @@
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
+#from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelBinarizer
 import logging
 import csv
 
-logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
+#logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 class PreProcess:
     def convert(self, filepath):
@@ -87,14 +87,31 @@ class PreProcess:
                 #25 features, only C15, C16 is value
                 ignore_index = [15, 16]
                 cat_index = range(0, 15) + range(17, 25)
+                """
                 X, map_dict = self.transform_and_map(X, ignore_index = ignore_index)
                 logging.info("After small index transform X = \n%s" %X[:3])
                 enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int8, handle_unknown='ignore',n_values='auto')
-                enc.fit(X)
                 X = enc.transform(X)
-                logging.info("enc.get_params = %s" %enc.get_params())
-                logging.info("After enc transform X[0] =\n%s" %X.getrow(0))
-                return X, y, enc, map_dict
+                """
+                map_dict = range(25)
+                enc = LabelBinarizer()
+                logging.info("Shape X = %r, %r" %(X.shape))
+                new_X = X[:, ignore_index]
+                for i in cat_index:
+                    logging.info("Shape X[:,%d] = %r" %( i, X[:,i].shape))
+                    logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
+                    enc.fit(X[:,i])
+                    #logging.info("enc.get_params = %s" %enc.get_params())
+                    new_X = np.concatenate((new_X, enc.transform(X[:,i])), axis=1)
+                    logging.debug("After transform X[:,%d] = %s" % (i, enc.transform(X[:10,i])))
+                    map_dict[i] = enc.classes_
+                    #FIXME len(dict) =2 will have problem
+                    logging.debug("After transform shape X[:,%d] = %r" % (i, enc.transform(X[:10,i]).shape))
+                    logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
+                
+                logging.info("Shape new X = %r, %r" %(new_X.shape))
+                logging.info("After enc transform X[0] =\n%s" %new_X[0])
+                return new_X, y, enc, map_dict
             else:
                 #Remove id and click
                 X = X[:,2:].astype('int64')
@@ -113,11 +130,31 @@ class PreProcess:
             if enc !=None and map_dict !=None:
                 logging.info("X = \n%s" %X[:3])
                 #25 features, only C15, C16 is value
+                cat_index = range(0, 15) + range(17, 25)
                 ignore_index = [15, 16]
+                """
                 X = self.transform_with_map(X, map_dict, ignore_index = ignore_index)
                 logging.info("After small index transform X = \n%s" %X[:3])
                 X = enc.transform(X)
                 logging.info("After enc transform X[0] =\n%s" %X.getrow(0))
+                """
+
+                logging.info("Shape X = %r, %r" %(X.shape))
+                new_X = X[:, ignore_index]
+                for i in cat_index:
+                    logging.info("Shape X[:,%d] = %r" %( i, X[:,i].shape))
+                    logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
+                    enc.fit(map_dict[i])
+                    new_X = np.concatenate((new_X, enc.transform(X[:,i])), axis=1)
+                    logging.debug("After transform X[:,%d] = %s" % (i, enc.transform(X[:10,i])))
+                    logging.debug("After transform shape X[:,%d] = %r" % (i, enc.transform(X[:10,i]).shape))
+                    #FIXME len(dict) =2 will have problem
+                    logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
+                
+                logging.info("Shape new X = %r, %r" %(new_X.shape))
+                logging.info("After enc transform X[0] =\n%s" %new_X[0])
+                return new_X, ids
+            
             return X, ids
 
     def divide_train_data(self, filepath):
@@ -144,15 +181,16 @@ class PreProcess:
 if __name__ == "__main__":
     p = PreProcess()
 
+    logging.basicConfig(format='--%(asctime)s:[%(levelname)s]:%(lineno)d:%(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     #filepath = 'data/train_10.csv'
     #out_filepath = p.convert(filepath)
 
-    out_filepath = 'data/train_10.csv.out'
+    #out_filepath = 'data/train_10.csv.out'
+    out_filepath = 'data/train_1000.csv.out'
     X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
     logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
-    #logging.info("example X = \n%s\ny =%s" %(X.getrow(0), y[0]))
     
-    test_filepath = 'data/test_10.csv.out'
+    test_filepath = 'data/test_1000.csv.out'
     X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
     logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
     #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
