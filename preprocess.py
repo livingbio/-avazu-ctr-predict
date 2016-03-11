@@ -82,8 +82,9 @@ class PreProcess:
                 X = X[:,2:].astype('int64')
                 logging.info("X = \n%s" %X[:3])
                 #25 features, only C15, C16 is value
-                ignore_index = [15, 16]
                 cat_index = range(0, 15) + range(17, 25)
+                cat_index.remove(10)
+                ignore_index = [10, 15, 16]
                 """
                 X, map_dict = self.transform_and_map(X, ignore_index = ignore_index)
                 logging.info("After small index transform X = \n%s" %X[:3])
@@ -135,7 +136,8 @@ class PreProcess:
                 logging.info("X = \n%s" %X[:3])
                 #25 features, only C15, C16 is value
                 cat_index = range(0, 15) + range(17, 25)
-                ignore_index = [15, 16]
+                cat_index.remove(10)
+                ignore_index = [10, 15, 16]
                 """
                 X = self.transform_with_map(X, map_dict, ignore_index = ignore_index)
                 logging.info("After small index transform X = \n%s" %X[:3])
