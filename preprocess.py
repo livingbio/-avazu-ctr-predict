@@ -166,7 +166,7 @@ class PreProcess:
                     
                     logging.debug("After transform X[:,%d] = %s" % (i, new_X_i[:10]))
                     logging.debug("After shape new_X_i[:,%d] = %r, new_X = %r" % (i, new_X_i.shape, new_X.shape))
-                    logging.info("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
+                    logging.debug("Dict %d(%d) : %s" %(i, len(map_dict[i]), map_dict[i]))
 
                 logging.info("Shape new X = %r, %r" %(new_X.shape))
                 logging.info("After enc transform X[0] =\n%s" %new_X[0])

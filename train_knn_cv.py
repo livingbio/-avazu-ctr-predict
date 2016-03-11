@@ -15,14 +15,16 @@ if __name__ == "__main__":
     #out_filepath = 'data/train_1000.csv.out'
 
     #Load data
-    X, y = p.load_train_data(out_filepath)
+    #X, y = p.load_train_data(out_filepath)
+    #Load data with category
+    X, y, enc, map_dict = p.load_train_data(out_filepath, category = True)
     logging.info("Shape X = %r, y =%r" %(X.shape, y.shape ))
     logging.info("example X = %s\ny =%r" %(X[0], y[0]))
     logging.info("classes: %r" % list(np.unique(y)))
 
     #Sampling
     #At least 3
-    POWER = 4
+    POWER = 6
     CONST = 1
     #At least 2
     n_subsamples = CONST*10**POWER
@@ -40,11 +42,12 @@ if __name__ == "__main__":
     #CV
     learner_params = {
             #'n_neighbors' : [15],
-            'n_neighbors' : [100, 150, 200, 250, 300],
+            'n_neighbors' : [60, 80, 100, 120, 140],
             'weights' : ['uniform'],
             #'weights' : ['uniform', 'distance'],
-            'algorithm' : ['auto']
+            #'algorithm' : ['auto']
             #'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
+            'algorithm' : ['auto', 'ball_tree', 'kd_tree']
             }
 
     #Add class_weight
@@ -59,7 +62,7 @@ if __name__ == "__main__":
     logging.info("Best params: %s\nScore: %s" % (gs_learner.best_params_, gs_learner.best_score_))
     
     #XXX skip test
-    #exit()
+    exit()
 
     #Load test data for 5 times
     test_filepattern = 'data/test_%d_M.out'
@@ -67,7 +70,9 @@ if __name__ == "__main__":
     for part in range(1, 6):
         test_filepath = test_filepattern % part
         logging.info("Loading test set [%s]..." % test_filepath)
-        X_test, ids_test= p.load_test_data(test_filepath)
+        #X_test, ids_test= p.load_test_data(test_filepath)
+        #Load data with category
+        X_test, ids_test= p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
         logging.info("Shape X = %r, ids =%r" %(X_test.shape, ids_test.shape ))
         logging.info("example X = %s\nids =%r" %(X_test[0], ids_test[0]))
         learner_probs = gs_learner.predict_proba(X_test)
