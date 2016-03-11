@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from scipy import sparse
 import logging
 import csv
 
@@ -70,7 +71,7 @@ class PreProcess:
             #MAKE numpy array
             reader = csv.reader(ifile)
             x = list(reader)
-            logging.debug('small_x %s' %x)
+            #logging.debug('small_x %s' %x)
             X = np.array(x)
             #Get click
             if regression:
@@ -116,7 +117,7 @@ class PreProcess:
 
                 logging.info("Shape new X = %r, %r" %(new_X.shape))
                 logging.info("After enc transform X[0] =\n%s" %new_X[0])
-                return new_X, y, enc, map_dict
+                return sparse.csr_matrix(new_X), y, enc, map_dict
             else:
                 #Remove id and click
                 X = X[:,2:].astype('int64')
@@ -127,7 +128,7 @@ class PreProcess:
             #MAKE numpy array
             reader = csv.reader(ifile)
             x = list(reader)
-            logging.debug('small_x %s' %x)
+            #logging.debug('small_x %s' %x)
             X = np.array(x)
             #Get id
             ids = X[:,0]
@@ -172,7 +173,7 @@ class PreProcess:
 
                 logging.info("Shape new X = %r, %r" %(new_X.shape))
                 logging.info("After enc transform X[0] =\n%s" %new_X[0])
-                return new_X, ids
+                return sparse.csr_matrix(new_X), ids
 
             return X, ids
 
@@ -204,16 +205,18 @@ if __name__ == "__main__":
     #filepath = 'data/train_10.csv'
     #out_filepath = p.convert(filepath)
 
-    out_filepath = 'data/train_10.csv.out'
-    #out_filepath = 'data/train_1000.csv.out'
+    #out_filepath = 'data/train_10.csv.out'
+    out_filepath = 'data/train_1000.csv.out'
     X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
     logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
+    logging.info("X[0] =\n%s" %X.getrow(0))
 
-    #test_filepath = 'data/test_1000.csv.out'
-    test_filepath = 'data/test_10.csv.out'
+    test_filepath = 'data/test_1000.csv.out'
+    #test_filepath = 'data/test_10.csv.out'
     X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
     logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
     #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
+    logging.info("X[0] =\n%s" %X.getrow(0))
 
     #train_filepath = 'data/train_s404_100K.out'
     #p.divide_train_data(train_filepath)
