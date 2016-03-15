@@ -104,9 +104,12 @@ class PreProcess:
                     map_dict[i] = enc.classes_
                     #FIX len(dict) =1 will have 0 value of hit
                     if len(map_dict[i]) == 1:
-                        new_X = np.concatenate((new_X, 1-new_X_i), axis=1)
+                        #skip
+                        #new_X = np.concatenate((new_X, 1-new_X_i), axis=1)
+                        continue
                     #FIX len(dict) =2 will 1-d instead of 2-d
                     elif len(map_dict[i]) == 2:
+                        np.append(map_dict)
                         new_X = np.concatenate((new_X, 1-new_X_i, new_X_i), axis=1)
                     else:
                         new_X = np.concatenate((new_X, new_X_i), axis=1)
@@ -205,18 +208,18 @@ if __name__ == "__main__":
     #filepath = 'data/train_10.csv'
     #out_filepath = p.convert(filepath)
 
-    #out_filepath = 'data/train_10.csv.out'
-    out_filepath = 'data/train_1000.csv.out'
+    out_filepath = 'data/train_10.csv.out'
+    #out_filepath = 'data/train_1000.csv.out'
     X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
     logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
-    logging.info("X[0] =\n%s" %X.getrow(0))
+    logging.info("X[:10] =\n%s" % X.toarray()[:10])
 
-    test_filepath = 'data/test_1000.csv.out'
-    #test_filepath = 'data/test_10.csv.out'
+    #test_filepath = 'data/test_1000.csv.out'
+    test_filepath = 'data/test_10.csv.out'
     X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
     logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
     #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
-    logging.info("X[0] =\n%s" %X.getrow(0))
+    logging.info("X[:10] =\n%s" % X.toarray()[:10])
 
     #train_filepath = 'data/train_s404_100K.out'
     #p.divide_train_data(train_filepath)
