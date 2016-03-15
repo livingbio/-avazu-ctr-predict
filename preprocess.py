@@ -92,6 +92,7 @@ class PreProcess:
                 enc = OneHotEncoder(categorical_features=cat_index, dtype=np.int8, handle_unknown='ignore',n_values='auto')
                 X = enc.transform(X)
                 """
+                INVALID = -2
                 map_dict = range(25)
                 enc = LabelBinarizer()
                 logging.info("Shape X = %r, %r" %(X.shape))
@@ -100,7 +101,6 @@ class PreProcess:
                     logging.info("Shape X[:,%d] = %r" %( i, X[:,i].shape))
                     logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
                     enc.fit(X[:,i])
-                    new_X_i = enc.transform(X[:,i])
                     map_dict[i] = enc.classes_
                     #FIX len(dict) =1 will have 0 value of hit
                     if len(map_dict[i]) == 1:
@@ -109,9 +109,12 @@ class PreProcess:
                         continue
                     #FIX len(dict) =2 will 1-d instead of 2-d
                     elif len(map_dict[i]) == 2:
-                        np.append(map_dict)
+                        np.append(map_dict[i], INVALID)
+                        enc.fit(map_dict[i])
+                        new_X_i = enc.transform(X[:,i])
                         new_X = np.concatenate((new_X, 1-new_X_i, new_X_i), axis=1)
                     else:
+                        new_X_i = enc.transform(X[:,i])
                         new_X = np.concatenate((new_X, new_X_i), axis=1)
 
                     logging.debug("After transform X[:,%d] = %s" % (i, new_X_i[:10]))
@@ -149,6 +152,7 @@ class PreProcess:
                 logging.info("After enc transform X[0] =\n%s" %X.getrow(0))
                 """
 
+                INVALID = -2
                 logging.info("Shape X = %r, %r" %(X.shape))
                 new_X = X[:, ignore_index]
                 for i in cat_index:
@@ -156,13 +160,17 @@ class PreProcess:
                     logging.debug("X[:,%d] = %s" % (i, X[:10,i]))
                     
                     #FIX len(dict) =2 will have problem
-                    if len(map_dict[i]) == 2:
+                    if len(map_dict[i]) == 1:
+                        #skip
+                        #new_X = np.concatenate((new_X, 1-new_X_i), axis=1)
+                        continue
+                    elif len(map_dict[i]) == 2:
                         enc.fit(map_dict[i])
                         new_X_i = enc.transform(X[:,i])
                         if new_X_i.shape[1] == 2:
                             new_X = np.concatenate((new_X, new_X_i), axis=1)
                         else:
-                            enc.fit([map_dict[i][0], map_dict[i][1], 9879])
+                            enc.fit([map_dict[i][0], map_dict[i][1], INVALID])
                             new_X_i = enc.transform(X[:,i])[:,:2]
                             new_X = np.concatenate((new_X, new_X_i), axis=1)
                     else:
@@ -208,14 +216,14 @@ if __name__ == "__main__":
     #filepath = 'data/train_10.csv'
     #out_filepath = p.convert(filepath)
 
-    out_filepath = 'data/train_10.csv.out'
-    #out_filepath = 'data/train_1000.csv.out'
+    #out_filepath = 'data/train_10.csv.out'
+    out_filepath = 'data/train_1000.csv.out'
     X, y, enc, map_dict = p.load_train_data(out_filepath, regression=True, category = True)
     logging.info("Shape X = \n%r, y =%r" %(X.shape, y.shape ))
     logging.info("X[:10] =\n%s" % X.toarray()[:10])
 
-    #test_filepath = 'data/test_1000.csv.out'
-    test_filepath = 'data/test_10.csv.out'
+    test_filepath = 'data/test_1000.csv.out'
+    #test_filepath = 'data/test_10.csv.out'
     X, ids = p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
     logging.info("Shape X = \n%r, ids =%r" %(X.shape, ids.shape ))
     #logging.info("example X = \n%s\nids =%r" %(X[0], ids[0]))
