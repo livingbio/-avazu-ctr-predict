@@ -11,8 +11,8 @@ if __name__ == "__main__":
     p = PreProcess()
 
     #out_filepath = 'data/train_1M.csv.out'
-    out_filepath = 'data/train_s404_10K.out'
-    #out_filepath = 'data/train_1000.csv.out'
+    #out_filepath = 'data/train_s404_10K.out'
+    out_filepath = 'data/train_1000.csv.out'
 
     #Load data
     #X, y = p.load_train_data(out_filepath)
@@ -41,13 +41,13 @@ if __name__ == "__main__":
     #Learner_params
     #CV
     learner_params = {
-            #'n_neighbors' : [15],
-            'n_neighbors' : [60, 80, 100, 120, 140],
+            'n_neighbors' : [15],
+            #'n_neighbors' : [60, 80, 100, 120, 140],
             'weights' : ['uniform'],
             #'weights' : ['uniform', 'distance'],
-            #'algorithm' : ['auto']
+            'algorithm' : ['auto']
             #'algorithm' : ['auto', 'ball_tree', 'kd_tree', 'brute']
-            'algorithm' : ['auto', 'ball_tree', 'kd_tree']
+            #'algorithm' : ['auto', 'ball_tree', 'kd_tree']
             }
 
     #Add class_weight
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     logging.info("Best params: %s\nScore: %s" % (gs_learner.best_params_, gs_learner.best_score_))
     
     #XXX skip test
-    exit()
+    #exit()
 
     #Load test data for 5 times
     test_filepattern = 'data/test_%d_M.out'
@@ -72,26 +72,29 @@ if __name__ == "__main__":
         logging.info("Loading test set [%s]..." % test_filepath)
         #X_test, ids_test= p.load_test_data(test_filepath)
         #Load data with category
-        X_test, ids_test= p.load_test_data(test_filepath, enc = enc, map_dict = map_dict)
-        logging.info("Shape X = %r, ids =%r" %(X_test.shape, ids_test.shape ))
-        logging.info("example X = %s\nids =%r" %(X_test[0], ids_test[0]))
-        learner_probs = gs_learner.predict_proba(X_test)
-        #[prob of 0, prob of 1]
-        logging.info("prob of test: %s" % learner_probs[:10])
-        
-        out_filepath = "%s-knn-s%d-n%d-w-%s-a-%s.csv" %(test_filepath, n_subsamples, gs_learner.best_params_['n_neighbors'], gs_learner.best_params_['weights'], gs_learner.best_params_['algorithm'])
-        logging.info("Writing out file %s" % out_filepath)
-        if len(ids_test) != len(learner_probs):
-            logging.error("Test case count don:t match")
-        else :
-            with open(out_filepath, 'a') as ofile:
-                writer = csv.DictWriter(ofile, field)
-                if part == 1:
-                    writer.writeheader()
-                for i in range(len(ids_test)):
-                    row = {'id' : ids_test[i], 'click' : learner_probs[i][1]}
-                    #logging.info("row %d : %s" %(i, row))
-                    writer.writerow(row)
+
+        width = 10000
+        for a_slice in range(100):
+            logging.info("+++Doing slice %d+++" %(a_slice))
+            X_test, ids_test= p.load_test_data(test_filepath, enc = enc, map_dict = map_dict, start_line_no = a_slice*width)
+            logging.info("Shape X = %r, ids =%r" %(X_test.shape, ids_test.shape ))
+            logging.info("example X = %s\nids =%r" %(X_test[0], ids_test[0]))
+            learner_probs = gs_learner.predict_proba(X_test)
+            #[prob of 0, prob of 1]
+            logging.info("prob of test: %s" % learner_probs[:10])
+            out_filepath = "%s-knn-s%d-n%d-w-%s-a-%s.csv" %(test_filepath, n_subsamples, gs_learner.best_params_['n_neighbors'], gs_learner.best_params_['weights'], gs_learner.best_params_['algorithm'])
+            logging.info("Writing out file %s" % out_filepath)
+            if len(ids_test) != len(learner_probs):
+                logging.error("Test case count don:t match")
+            else :
+                with open(out_filepath, 'a') as ofile:
+                    writer = csv.DictWriter(ofile, field)
+                    if part == 1 and a_slice == 0:
+                        writer.writeheader()
+                    for i in range(len(ids_test)):
+                        row = {'id' : ids_test[i], 'click' : learner_probs[i][1]}
+                        #logging.info("row %d : %s" %(i, row))
+                        writer.writerow(row)
 
     
     logging.info("train_knn_cv.py End")

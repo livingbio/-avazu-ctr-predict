@@ -134,18 +134,21 @@ class PreProcess:
         with open(filepath) as ifile:
             #MAKE numpy array
             reader = csv.reader(ifile)
+            x = 0
             if start_line_no == None:
                 x = list(reader)
             else:
-                x = list([next(itertools.islice(reader, start_line_no, start_line_no+1))])
-                #logging.info("X %s" %x)
-                slice = 100
                 try:
-                    for i in range(slice-1):
+                    x = list([next(itertools.islice(reader, start_line_no, start_line_no+1))])
+                    #logging.info("X %s" %x)
+                    a_slice = 10000
+                    for i in range(a_slice-1):
                         x.append(next(itertools.islice(reader, 0, 1)))
                         #logging.info("X at %d %s" %(i, x))
                 except  StopIteration:
                     pass
+                if x == 0:
+                    return 
                 logging.info("Read test data -%d- lines from -%d-" %(len(x), start_line_no))
 
             #logging.debug('small_x %s' %x)
