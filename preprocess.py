@@ -148,7 +148,7 @@ class PreProcess:
                 except  StopIteration:
                     pass
                 if x == 0:
-                    return 
+                    return None, None
                 logging.info("Read test data -%d- lines from -%d-" %(len(x), start_line_no))
 
             #logging.debug('small_x %s' %x)

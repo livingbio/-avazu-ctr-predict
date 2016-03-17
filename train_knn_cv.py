@@ -77,6 +77,8 @@ if __name__ == "__main__":
         for a_slice in range(100):
             logging.info("+++Doing slice %d+++" %(a_slice))
             X_test, ids_test= p.load_test_data(test_filepath, enc = enc, map_dict = map_dict, start_line_no = a_slice*width)
+            if X_test == None:
+                break
             logging.info("Shape X = %r, ids =%r" %(X_test.shape, ids_test.shape ))
             logging.info("example X = %s\nids =%r" %(X_test[0], ids_test[0]))
             learner_probs = gs_learner.predict_proba(X_test)
